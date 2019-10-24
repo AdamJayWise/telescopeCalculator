@@ -10,14 +10,14 @@ console.log('Telescope Calculator');
 var activeCameras = ['Marana']; // list of active cameras
 
 // table headers
-headers = ['Andor Camera', 'Telescope aperture (mm)', 'Focal ratio (f/#)',
-'Focal length (mm)', 'CCD size (mm), x', 'CCD size (mm), y', 'Pixel size (\u03BCm)',
-'FOV, \xB0, x', 'FOV, \xB0, y', 'FOV (arcmins), x', 'FOV (arcmins), y',
-'Image scale (arcsecs/pixel)', 'calculated CCD size (K), x', 'calculated CCD size (K), y',
-'Image size in telescope focal plane (mm), x', 'Image size in telescope focal plane (mm), y',
-'approx. minimum pixel size (\u03BCm) to avoid oversampling',
-'average seeing (arcsecs)', 'd of image (mm) - for SQUARE sensor',
-'d of image (mm) for rectangular sensor'];
+headers = ['Andor Camera', 'Telescope Aperture (mm)', 'Focal Ratio (f/#)',
+'Focal Length (mm)', 'CCD Size (mm)_xy', 'Pixel Size (\u03BCm)',
+'FOV, \xB0_xy', 'FOV (arcmin)_xy',
+'Image Scale (arcsec/pixel)', 'Calculated CCD Size (K)_xy',
+'Image Size in Telescope Focal Plane (mm)_xy',
+'Approx. Minimum Pixel Size (\u03BCm) to Avoid Oversampling',
+'Average Seeing (arcsec)', 'D of Image (mm), Square Sensor',
+'D of Image (mm), Rectangular Sensor'];
 
 // lets try to make a table from the camera info object
 
@@ -31,14 +31,36 @@ function createTable(targetDiv){
         return x;
     }
 
+    var dataTableHead = dataTable.append('tr')
     headers.forEach(function(label){
-        dataTable.append('th').text(label);
+        var colWidth = 1;
+        if (label.split('_')[1] == 'xy'){
+            label = label.split('_')[0];
+            colWidth = 2;
+        }
+        var newEntry = dataTableHead.append('th');
+        newEntry.text(label);
+        newEntry.attr('colspan', colWidth);
     })
+
+    var secondaryLabels = dataTable.append('tr').attr('class','subHead')
+        secondaryLabels.append('td').text('').attr('colspan', 4)
+        secondaryLabels.append('td').text('x')
+        secondaryLabels.append('td').text('y')
+        secondaryLabels.append('td').text('')
+        secondaryLabels.append('td').text('x')
+        secondaryLabels.append('td').text('y')
+        secondaryLabels.append('td').text('x')
+        secondaryLabels.append('td').text('y')
+        secondaryLabels.append('td').text('')
+        secondaryLabels.append('td').text('x')
+        secondaryLabels.append('td').text('y')
+        secondaryLabels.append('td').text('').attr('colspan', 6)
 
     cameras.forEach(function(entry){
         if (activeCameras.indexOf(entry['Andor Camera']) != -1){
             console.log(entry['Andor Camera'], activeCameras.indexOf(entry['Andor Camera']))
-            var row = dataTable.append('tr');
+            var row = dataTable.append('tr').attr('class','mainTable');
             var keys = Object.keys(entry);
             for (k in keys){
                 row.append('td').text( roundIfNumber( entry[keys[k]] ) );
@@ -61,6 +83,8 @@ var controlDiv = d3.select('body')
 var inputDiv = d3.select('#controlDiv')
                     .append('div')
                     .attr('id','inputDiv')
+
+inputDiv.append('div').attr('class','inputLabel').text('Input Telescope Parameters')
 
 var tableDiv = d3.select('body')
                     .append('div')
@@ -85,7 +109,7 @@ function makeInput(configObj){
 }
 
 var fovInput = makeInput( {
-    label : 'F/#',
+    label : 'f/#',
     shortName : 'fnum',
     initialValue : 2.2,
     onFunc : function(){
@@ -129,7 +153,19 @@ var focalLengthInput = makeInput( {
 
 
 // add a drop-down selector for which cameras to keep
-var cameraSelector = d3.select('#controlDiv').append('select').attr('id','cameraSelector').attr('multiple','true');
+
+d3.select('#controlDiv')
+    .append('div')
+    .attr('id','cameraSelectorDiv')
+
+d3.select('#cameraSelectorDiv')
+    .append('div')
+    .text('Select Cameras to Chart')    
+
+var cameraSelector = d3.select('#cameraSelectorDiv')
+    .append('select')
+    .attr('id','cameraSelector')
+    .attr('multiple','true');
 
 cameras.forEach(function(entry){
     cameraSelector.append('option').property('value', entry['Andor Camera']).text(entry['Andor Camera'])

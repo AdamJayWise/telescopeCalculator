@@ -10,11 +10,15 @@
         border-collapse: collapse;
     }
 
+    td {
+        font-size : 9pt;
+    }
+
     th {
         font-weight: bold;
     }
 
-    tr:nth-child(even){
+    tr:nth-child(odd){
         background-color: #f2f2f2;
         }
 
@@ -29,14 +33,37 @@
         padding : 5px;
     }
 
+    #selectionControlDiv {
+        display : flex;
+        flex-direction : columns;
+    }
+
     #inputDiv div {
         margin : 5px;
     }
 
+    #cameraSelectorDiv div {
+        font-weight : bold
+    }
+
+    .inputLabel {
+        font-weight : bold;
+    }
+
     select {
         width : 200px;
-        margin : 10px;
     }
+
+    .subHead > td {
+        background-color : white;
+        text-align : center;
+    }
+
+    .mainTable > td {
+        padding : 2px;
+        text-align : center;
+    }
+
 </style>
 	
 </head>
