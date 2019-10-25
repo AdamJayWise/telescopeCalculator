@@ -8,6 +8,7 @@
         font-size: 10pt;
         font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;
         border-collapse: collapse;
+        border-spacing:0px;
     }
 
     td {
@@ -16,6 +17,10 @@
 
     th {
         font-weight: bold;
+        vertical-align: top;
+        height: 1px;
+        background-color : #d6dbff;
+
     }
 
     tr:nth-child(odd){
@@ -52,6 +57,7 @@
 
     select {
         width : 200px;
+        height : 82%;
     }
 
     .subHead > td {
@@ -60,8 +66,27 @@
     }
 
     .mainTable > td {
-        padding : 2px;
+        padding : 2px 5px 2px 5px;
         text-align : center;
+    }
+
+    .xySubHeadDiv {
+        display : flex;
+        flex-direction: row;
+        align-items: flex-end; 
+        height : 100%;
+
+    }
+
+    .xySubHeadDiv div {
+        width : 50%;
+      
+    }
+
+    .headCell {
+        height : 100%;
+        display : flex;
+        flex-direction: column;
     }
 
 </style>

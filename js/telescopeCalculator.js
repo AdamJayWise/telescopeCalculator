@@ -12,10 +12,10 @@ var activeCameras = ['Marana']; // list of active cameras
 // table headers
 headers = ['Andor Camera', 'Telescope Aperture (mm)', 'Focal Ratio (f/#)',
 'Focal Length (mm)', 'CCD Size (mm)_xy', 'Pixel Size (\u03BCm)',
-'FOV, \xB0_xy', 'FOV (arcmin)_xy',
+'FOV (\xB0)_xy', 'FOV (arcmin)_xy',
 'Image Scale (arcsec/pixel)', 'Calculated CCD Size (K)_xy',
-'Image Size in Telescope Focal Plane (mm)_xy',
-'Approx. Minimum Pixel Size (\u03BCm) to Avoid Oversampling',
+'Telescope Focal Plane Image Size (mm)_xy',
+'Approx. Min. Pixel Size (\u03BCm) to Avoid Oversampling',
 'Average Seeing (arcsec)', 'D of Image (mm), Square Sensor',
 'D of Image (mm), Rectangular Sensor'];
 
@@ -38,24 +38,18 @@ function createTable(targetDiv){
             label = label.split('_')[0];
             colWidth = 2;
         }
-        var newEntry = dataTableHead.append('th');
-        newEntry.text(label);
+        var newEntry = dataTableHead.append('th')
+        var headCell = newEntry.append('div').attr('class','headCell')
+        headCell.append('div').text(label);
+        
+        if (colWidth > 1){
+            var subHeadDiv = headCell.append('div').attr('class','xySubHeadDiv')
+            subHeadDiv.append('div').text('x')
+            subHeadDiv.append('div').text('y')
+        }
+
         newEntry.attr('colspan', colWidth);
     })
-
-    var secondaryLabels = dataTable.append('tr').attr('class','subHead')
-        secondaryLabels.append('td').text('').attr('colspan', 4)
-        secondaryLabels.append('td').text('x')
-        secondaryLabels.append('td').text('y')
-        secondaryLabels.append('td').text('')
-        secondaryLabels.append('td').text('x')
-        secondaryLabels.append('td').text('y')
-        secondaryLabels.append('td').text('x')
-        secondaryLabels.append('td').text('y')
-        secondaryLabels.append('td').text('')
-        secondaryLabels.append('td').text('x')
-        secondaryLabels.append('td').text('y')
-        secondaryLabels.append('td').text('').attr('colspan', 6)
 
     cameras.forEach(function(entry){
         if (activeCameras.indexOf(entry['Andor Camera']) != -1){
@@ -102,13 +96,13 @@ function makeInput(configObj){
                         .text(configObj.label + '  ')
                         .append('input')
                         .attr('id',configObj.shortName + 'Input')
-                        .attr('value',configObj.initialValue)
+                        .property('value',configObj.initialValue)
                         .attr('type','text')
 
         inputSelection.on('change', configObj.onFunc);
 }
 
-var fovInput = makeInput( {
+var fnumInput = makeInput( {
     label : 'f/#',
     shortName : 'fnum',
     initialValue : 2.2,
@@ -116,7 +110,8 @@ var fovInput = makeInput( {
                 var self = this;
                 cameras.forEach( function(x){
                     x['Focal ratio (f/#)'] = Number(self.value);
-                    x['Telescope aperture (mm)'] = Number(x['Focal ratio (f/#)']) * Number(x['Focal length (mm)']);
+                    x['Telescope aperture (mm)'] =  Number(x['Focal length (mm)']) / Number(x['Focal ratio (f/#)']) ;
+                    d3.select('#apertureInput').property('value', Math.round( 1000* Number(x['Telescope aperture (mm)']))/1000);
                     updateDependentParameters(x);
                 })
                 updateTable();
@@ -131,13 +126,31 @@ var focalLengthInput = makeInput( {
                 var self = this;
                 cameras.forEach( function(x){
                     x['Focal length (mm)'] = Number(self.value);
+                    x['Focal ratio (f/#)'] = Number(x['Focal length (mm)']) / Number(x['Telescope aperture (mm)']);
+                    d3.select('#fnumInput').property('value', Math.round( 1000* Number(x['Focal ratio (f/#)']))/1000);
                     updateDependentParameters(x);
                 })
                 updateTable();
             }
 });
 
-var focalLengthInput = makeInput( {
+var apInput = makeInput( {
+    label : 'Telescope Aperture (mm)',
+    shortName : 'aperture',
+    initialValue : 279,
+    onFunc : function(){
+                var self = this;
+                cameras.forEach( function(x){
+                    x['Telescope aperture (mm)'] = Number(self.value);
+                    x['Focal ratio (f/#)'] = x['Focal length (mm)'] / x['Telescope aperture (mm)'];
+                    d3.select('#fnumInput').property('value', Math.round( 1000* Number(x['Focal ratio (f/#)']))/1000);
+                    updateDependentParameters(x);
+                })
+                updateTable();
+            }
+});
+
+var seeingInput = makeInput( {
     label : 'Avg. Seeing (arcsec)',
     shortName : 'avgSeeing',
     initialValue : 1.5,
@@ -194,5 +207,5 @@ function updateDependentParameters(x){
         x['approx. minimum pixel size (\u03BCm) to avoid oversampling'] = (Number(x['average seeing (arcsecs)']) * x['Focal length (mm)'] / 206.265 ) / 2;
         x['d of image (mm) - for SQUARE sensor'] = x['Image size in telescope focal plane (mm), x'] * Math.sqrt(2);
         x['d of image (mm) for rectangular sensor'] = Math.sqrt( x['Image size in telescope focal plane (mm), x']**2 + x['Image size in telescope focal plane (mm), y']**2 ) ;
-        return;
+        return null;
 };
