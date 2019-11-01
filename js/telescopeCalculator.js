@@ -7,17 +7,49 @@
 
 console.log('Telescope Calculator');
 
+// alphabetically sort list of cameras to start
+cameras.sort( function(a,b){
+    if (a['Andor Camera'].toUpperCase() > b['Andor Camera'].toUpperCase()){
+        return 1;
+    }
+    else{return -1}
+    });
+
 var activeCameras = ['Marana']; // list of active cameras
 
+var ascending = 1; // should table be sorted as ascending?
+
+var cameraLUT = {}
+cameras.forEach(function(entry){
+    cameraLUT[entry['Andor Camera']] = entry;
+})
+
 // table headers
-headers = ['Andor Camera', 'Telescope Aperture (mm)', 'Focal Ratio (f/#)',
+var headers = ['Andor Camera', 'Telescope Aperture (mm)', 'Focal Ratio (f/#)',
 'Focal Length (mm)', 'CCD Size (mm)_xy', 'Pixel Size (\u03BCm)',
 'FOV (\xB0)_xy', 'FOV (arcmin)_xy',
 'Image Scale (arcsec/pixel)', 'Calculated CCD Size (K)_xy',
 'Telescope Focal Plane Image Size (mm)_xy',
-'Approx. Min. Pixel Size (\u03BCm) to Avoid Oversampling',
+'Approx. Min. Pixel Size (\u03BCm) to Avoid Over Sampling',
 'Average Seeing (arcsec)', 'D of Image (mm), Square Sensor',
 'D of Image (mm), Rectangular Sensor'];
+
+var headerDict = {
+    'Andor Camera' : 'Andor Camera',
+    'Telescope aperture (mm)' : 'Telescope Aperture (mm)',
+    'Focal Ratio (f/#)' : "Focal ratio (f/#)",
+    'Focal Length (mm)' : "Focal length (mm)",
+    'CCD Size (mm)_xy' : "CCD size (mm), x",
+    'FOV (\xB0)_xy' : "FOV, °, y",
+    'Pixel Size (\u03BCm)' : "Pixel size (μm)",
+    'FOV (arcmin)_xy' : "FOV (arcmins), x",
+    'Image Scale (arcsec/pixel)' : "Image scale (arcsecs/pixel)",
+    'Calculated CCD Size (K)_xy' : "calculated CCD size (K), x",
+    'Telescope Focal Plane Image Size (mm)_xy' : "Image size in telescope focal plane (mm), y",
+    'Approx. Min. Pixel Size (\u03BCm) to Avoid Over Sampling' : 'approx. minimum pixel size (μm) to avoid oversampling',
+    'D of Image (mm), Square Sensor' : 'd of image (mm) - for SQUARE sensor',
+    'D of Image (mm), Rectangular Sensor' : "d of image (mm) for rectangular sensor",
+}
 
 // lets try to make a table from the camera info object
 
@@ -42,6 +74,23 @@ function createTable(targetDiv){
         var headCell = newEntry.append('div').attr('class','headCell')
         headCell.append('div').text(label);
         
+        headCell.attr('parameter' , label)
+
+        headCell.on('click', function(){
+            //console.log(label);
+            var self = d3.select(this);
+            var param = headerDict[d3.select(this).attr('parameter')];
+            //console.log(this, param)
+            cameras.sort( function(a,b){
+                    if(Number(a[param]) > Number(b[param])){
+                        return -1*ascending
+                    }
+                    else {return 1*ascending}
+                });
+                updateTable();
+                ascending = ascending*-1;
+            })
+        
         if (colWidth > 1){
             var subHeadDiv = headCell.append('div').attr('class','xySubHeadDiv')
             subHeadDiv.append('div').text('x')
@@ -53,7 +102,7 @@ function createTable(targetDiv){
 
     cameras.forEach(function(entry){
         if (activeCameras.indexOf(entry['Andor Camera']) != -1){
-            console.log(entry['Andor Camera'], activeCameras.indexOf(entry['Andor Camera']))
+            //console.log(entry['Andor Camera'], activeCameras.indexOf(entry['Andor Camera']))
             var row = dataTable.append('tr').attr('class','mainTable');
             var keys = Object.keys(entry);
             for (k in keys){
