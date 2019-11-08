@@ -244,8 +244,8 @@ d3.select("#cameraSelector")
 
 
 function updateDependentParameters(x){
-        x['FOV, \xB0, x'] = Number(x['CCD size (mm), x']) / Number(x['Focal length (mm)']);
-        x['FOV, \xB0, y'] = Number(x['CCD size (mm), y']) / Number(x['Focal length (mm)']);
+        x['FOV, \xB0, x'] = 57.3 * Number(x['CCD size (mm), x']) / Number(x['Focal length (mm)']);
+        x['FOV, \xB0, y'] = 57.3 * Number(x['CCD size (mm), y']) / Number(x['Focal length (mm)']);
         x['FOV (arcmins), x'] = 3439 * Number(x['CCD size (mm), x'])/Number(x['Focal length (mm)']);
         x['FOV (arcmins), y'] = 3439 * Number(x['CCD size (mm), y'])/Number(x['Focal length (mm)']);
         x['Image scale (arcsecs/pixel)'] = Number(x['Pixel size (\u03BCm)']) * 206.265 / Number(x['Focal length (mm)']) ;
